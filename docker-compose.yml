@@ -1,109 +1,91 @@
 services:
-
-  # ------------------------
-  # MONGO APPLE
-  # ------------------------
+  # ================================
+  #            MONGODB
+  # ================================
   mongo-apple:
     image: mongo:4.4.6
     container_name: mongo-apple
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-    volumes:
-      - ./data/mongo-apple:/data/db
     ports:
       - "27017:27017"
+    volumes:
+      - ./data/mongo-apple:/data/db
     restart: always
 
-  # ------------------------
-  # MONGO FITBIT
-  # ------------------------
   mongo-fitbit:
     image: mongo:4.4.6
     container_name: mongo-fitbit
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-    volumes:
-      - ./data/mongo-fitbit:/data/db
     ports:
       - "27018:27017"
+    volumes:
+      - ./data/mongo-fitbit:/data/db
     restart: always
 
-  # ------------------------
-  # INFLUXDB APPLE (c/ auth)
-  # ------------------------
+  # ================================
+  #            INFLUXDB
+  # ================================
   influx-apple:
     image: influxdb:1.8.4
     container_name: influx-apple
     environment:
       INFLUXDB_DB: applewatch
-      INFLUXDB_ADMIN_USER: influx.adm
-      INFLUXDB_ADMIN_PASSWORD: ct4k6Swpr94bnKl
-      INFLUXDB_HTTP_AUTH_ENABLED: "true"
-    volumes:
-      - ./data/influx-apple:/var/lib/influxdb
     ports:
       - "8086:8086"
+    volumes:
+      - ./data/influx-apple:/var/lib/influxdb
     restart: always
 
-  # ------------------------
-  # INFLUXDB FITBIT (c/ auth)
-  # ------------------------
   influx-fitbit:
     image: influxdb:1.8.4
     container_name: influx-fitbit
     environment:
       INFLUXDB_DB: fitbit
-      INFLUXDB_ADMIN_USER: influx.adm
-      INFLUXDB_ADMIN_PASSWORD: ct4k6Swpr94bnKl
-      INFLUXDB_HTTP_AUTH_ENABLED: "true"
-    volumes:
-      - ./data/influx-fitbit:/var/lib/influxdb
     ports:
       - "8087:8086"
+    volumes:
+      - ./data/influx-fitbit:/var/lib/influxdb
     restart: always
 
-  # ------------------------
-  # GRAFANA
-  # ------------------------
+  # ================================
+  #             GRAFANA
+  # ================================
   grafana:
     image: grafana/grafana:10.4.2
     container_name: grafana
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
-    volumes:
-      - ./data/grafana:/var/lib/grafana
+    user: "472:0"     # usuário interno do grafana
     ports:
       - "3000:3000"
+    volumes:
+      - ./data/grafana:/var/lib/grafana
     restart: always
-    depends_on:
-      - influx-apple
-      - influx-fitbit
-      - mongo-apple
-      - mongo-fitbit
 
-  # ------------------------
-  # AIRFLOW (SequentialExecutor)
-  # ------------------------
+  # ================================
+  #              AIRFLOW
+  # ================================
   airflow:
     image: apache/airflow:2.8.0
     container_name: airflow
+    user: "${AIRFLOW_UID:-50000}:0"
     environment:
-      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
-      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "sqlite:////opt/airflow/airflow.db"
+      AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     command: >
-      bash -c "airflow db upgrade &&
-               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
-               airflow scheduler & airflow webserver"
+      bash -c "
+        airflow db init &&
+        airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+        airflow webserver &
+        airflow scheduler
+      "
+    ports:
+      - "8080:8080"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
-    ports:
-      - "8080:8080"
+      - ./airflow/airflow.db:/opt/airflow/airflow.db
     restart: always
 
 networks:
