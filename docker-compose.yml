@@ -9,6 +9,8 @@ services:
       - "27017:27017"
     volumes:
       - ./data/mongo-apple:/data/db
+    networks:
+      - data-analytics-net
     restart: always
 
   mongo-fitbit:
@@ -18,6 +20,8 @@ services:
       - "27018:27017"
     volumes:
       - ./data/mongo-fitbit:/data/db
+    networks:
+      - data-analytics-net
     restart: always
 
   # ================================
@@ -32,6 +36,8 @@ services:
       - "8086:8086"
     volumes:
       - ./data/influx-apple:/var/lib/influxdb
+    networks:
+      - data-analytics-net
     restart: always
 
   influx-fitbit:
@@ -43,6 +49,8 @@ services:
       - "8087:8086"
     volumes:
       - ./data/influx-fitbit:/var/lib/influxdb
+    networks:
+      - data-analytics-net
     restart: always
 
   # ================================
@@ -59,6 +67,8 @@ services:
       - "3000:3000"
     volumes:
       - ./data/grafana:/var/lib/grafana
+    networks:
+      - data-analytics-net
     restart: always
 
   # ================================
@@ -98,7 +108,7 @@ services:
         --lastname User \
         --role Admin \
         --email admin@example.com || true
-      "
+        "
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
