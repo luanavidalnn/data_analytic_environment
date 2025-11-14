@@ -151,5 +151,5 @@ services:
     restart: always
 
 networks:
-  default:
-    name: data-analytics-net
+  data-analytics-net:
+    driver: bridge
