@@ -98,7 +98,7 @@ services:
         --lastname User \
         --role Admin \
         --email admin@example.com || true
-    "
+      "
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
