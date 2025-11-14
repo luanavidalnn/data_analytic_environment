@@ -107,6 +107,7 @@ services:
 
   airflow-init:
     image: apache/airflow:2.8.0
+    container_name: airflow-init
     entrypoint: /bin/bash
     command: |
       -c "
