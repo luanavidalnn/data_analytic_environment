@@ -67,19 +67,16 @@ services:
   airflow:
     image: apache/airflow:2.8.0
     container_name: airflow
-    user: "50000:0"
     environment:
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "sqlite:////opt/airflow/db/airflow.db"
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-    entrypoint: >
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "sqlite:////opt/airflow/db/airflow.db"
+    command: >
       bash -c "
-        mkdir -p /opt/airflow/dags /opt/airflow/logs /opt/airflow/plugins /opt/airflow/db &&
-        chown -R 50000:0 /opt/airflow &&
+        mkdir -p /opt/airflow/db &&
+        chmod -R 777 /opt/airflow/db &&
         airflow db init &&
         airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
-        airflow webserver &
-        exec airflow scheduler
+        airflow standalone
       "
     volumes:
       - ./airflow/dags:/opt/airflow/dags
