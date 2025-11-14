@@ -16,6 +16,7 @@ Toda a extração/dump acontece **a partir da máquina RÉPLICA**, garantindo se
 
 ## 🚀 Arquitetura
 
+```bash
 PRODUÇÃO (Apple/Fitbit)
 ├─ expõe portas dos MongoDBs (27017, 27018, ...)
 └─ expõe porta do InfluxDB (4241)
@@ -39,6 +40,7 @@ RÉPLICA ───────────────────────�
 
 ## 📁 Estrutura do Projeto
 
+```bash
 data-analytics/
 │
 ├── replica/
