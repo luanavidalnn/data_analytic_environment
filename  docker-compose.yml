@@ -1,0 +1,113 @@
+version: "3.9"
+
+services:
+
+  # ------------------------
+  # MONGO APPLE
+  # ------------------------
+  mongo-apple:
+    image: mongo:4.4.6
+    container_name: mongo-apple
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - ./data/mongo-apple:/data/db
+    ports:
+      - "27017:27017"
+    restart: always
+
+  # ------------------------
+  # MONGO FITBIT
+  # ------------------------
+  mongo-fitbit:
+    image: mongo:4.4.6
+    container_name: mongo-fitbit
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - ./data/mongo-fitbit:/data/db
+    ports:
+      - "27018:27017"
+    restart: always
+
+  # ------------------------
+  # INFLUXDB APPLE (c/ auth)
+  # ------------------------
+  influx-apple:
+    image: influxdb:1.8.4
+    container_name: influx-apple
+    environment:
+      INFLUXDB_DB: applewatch
+      INFLUXDB_ADMIN_USER: influx.adm
+      INFLUXDB_ADMIN_PASSWORD: ct4k6Swpr94bnKl
+      INFLUXDB_HTTP_AUTH_ENABLED: "true"
+    volumes:
+      - ./data/influx-apple:/var/lib/influxdb
+    ports:
+      - "8086:8086"
+    restart: always
+
+  # ------------------------
+  # INFLUXDB FITBIT (c/ auth)
+  # ------------------------
+  influx-fitbit:
+    image: influxdb:1.8.4
+    container_name: influx-fitbit
+    environment:
+      INFLUXDB_DB: fitbit
+      INFLUXDB_ADMIN_USER: influx.adm
+      INFLUXDB_ADMIN_PASSWORD: ct4k6Swpr94bnKl
+      INFLUXDB_HTTP_AUTH_ENABLED: "true"
+    volumes:
+      - ./data/influx-fitbit:/var/lib/influxdb
+    ports:
+      - "8087:8086"
+    restart: always
+
+  # ------------------------
+  # GRAFANA
+  # ------------------------
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    restart: always
+    depends_on:
+      - influx-apple
+      - influx-fitbit
+      - mongo-apple
+      - mongo-fitbit
+
+  # ------------------------
+  # AIRFLOW (SequentialExecutor)
+  # ------------------------
+  airflow:
+    image: apache/airflow:2.8.0
+    container_name: airflow
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: "sqlite:////opt/airflow/airflow.db"
+    command: >
+      bash -c "airflow db upgrade &&
+               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+               airflow scheduler & airflow webserver"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    ports:
+      - "8080:8080"
+    restart: always
+
+networks:
+  default:
+    name: data-analytics-net
