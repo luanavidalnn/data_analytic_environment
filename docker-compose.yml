@@ -181,7 +181,7 @@ volumes:
   mongo-data-fitbit:
     name: mongo-fitbit
   
-
 networks:
   data-analytics-net:
+    name: data-analytics-net
     driver: bridge
