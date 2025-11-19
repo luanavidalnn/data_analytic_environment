@@ -1,12 +1,12 @@
-FROM grafana/grafana:12.2.1
+FROM grafana/grafana:10.0.10
 
 USER root
 
 ADD ./custom-run.sh /custom-run.sh
 
-RUN apk update && \
+RUN apk update && \docker
     apk upgrade && \
-    apk add --no-cache git npm nodejs \
+    apk add --no-cache git npm nodejs 
     && git clone https://github.com/JamesOsgood/mongodb-grafana $GF_PATHS_PLUGINS/mongodb-grafana \
     && rm -rf $GF_PATHS_PLUGINS/mongodb-grafana\.git \
     && npm install --silent --prefix $GF_PATHS_PLUGINS/mongodb-grafana \
