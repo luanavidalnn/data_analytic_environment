@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  grafana:
+    container_name: grafana
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USERNAME:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=${USERS_ALLOW_SIGN_UP:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - ${GF_PORT:-3000}:3000
+    networks:
+      - grafana-network
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+volumes:
+  grafana-data:
+    name: grafana-data
+
+networks:
+  grafana-network:
+    name: grafana-network
+    # external: true
