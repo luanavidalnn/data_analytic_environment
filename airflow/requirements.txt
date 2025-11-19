@@ -1,0 +1,36 @@
+############################################
+# REQUIREMENTS DO PROJETO DATA ANALYTICS
+# Apple + Fitbit
+# Airflow 2.8.x
+############################################
+
+apache-airflow==2.8.0
+
+# MongoDB
+pymongo==4.6.3
+
+# InfluxDB 1.8
+influxdb==5.3.1
+
+# Utilitários
+pyyaml==6.0.1
+requests==2.32.3
+python-dateutil==2.9.0
+tenacity==8.2.3
+
+# ETL / Transformações
+pandas==2.2.2
+numpy==1.26.4
+ujson==5.10.0
+orjson==3.10.3
+
+# Log e formatação
+rich==13.7.0
+python-slugify==8.0.2
+
+# Testes
+pytest==8.2.1
+pytest-mock==3.12.0
+
+# Timezones
+tzdata==2024.1

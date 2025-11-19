@@ -1,0 +1,21 @@
+apple:
+  mongo:
+    host: "10.100.100.59"
+    port: 27017
+  influx:
+    host: "10.100.100.59"
+    port: 4241
+
+fitbit:
+  mongo:
+    host: "IP_DA_MAQUINA_FITBIT_PROD"
+    port: 28017
+  influx:
+    host: "IP_DA_MAQUINA_FITBIT_PROD"
+    port: 4241
+
+local:
+  mongo_apple: "mongodb://root:root@mongo-apple:27017"
+  mongo_fitbit: "mongodb://root:root@mongo-fitbit:27018"
+  influx_apple: "http://influx-apple:8086"
+  influx_fitbit: "http://influx-fitbit:8087"
