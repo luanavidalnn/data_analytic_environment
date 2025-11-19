@@ -64,7 +64,7 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: admin
     user: "472:0"     # usuário interno do grafana
     ports:
-      - "3000:3000"
+      - "3000:3333"
     volumes:
       - ./data/grafana:/var/lib/grafana
     networks:
