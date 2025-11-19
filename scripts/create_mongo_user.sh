@@ -6,13 +6,12 @@ MONGO_USER=${2:-root}
 MONGO_PASS=${3:-root}
 
 echo "===================================================="
-echo "CRIANDO USUÁRIO ROOT NO MONGO LOCAL"
+echo "CRIANDO USUÁRIO ROOT NO MONGO LOCAL (modo compatível Mongo 4.4)"
 echo "Container: $MONGO_CONTAINER"
 echo "User: $MONGO_USER"
 echo "===================================================="
 
-echo ">> Entrando no container do Mongo..."
-docker exec -i $MONGO_CONTAINER mongosh <<EOF
+docker exec -i $MONGO_CONTAINER mongo <<EOF
 use admin
 db.createUser({
   user: "$MONGO_USER",
