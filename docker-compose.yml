@@ -8,7 +8,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./data/mongo-apple:/data/db
+      - mongo-data-applewatch:/data/db
     networks:
       - data-analytics-net
     restart: always
@@ -19,7 +19,7 @@ services:
     ports:
       - "27018:27017"
     volumes:
-      - ./data/mongo-fitbit:/data/db
+      - mongo-data-fitbit:/data/db
     networks:
       - data-analytics-net
     restart: always
@@ -35,7 +35,7 @@ services:
     ports:
       - "8086:8086"
     volumes:
-      - ./data/influx-apple:/var/lib/influxdb
+      - influxdb-data-applewatch:/var/lib/influxdb
     networks:
       - data-analytics-net
     restart: always
@@ -48,7 +48,7 @@ services:
     ports:
       - "8087:8086"
     volumes:
-      - ./data/influx-fitbit:/var/lib/influxdb
+      - influxdb-data-fitbit:/var/lib/influxdb
     networks:
       - data-analytics-net
     restart: always
@@ -56,20 +56,27 @@ services:
   # ================================
   #             GRAFANA
   # ================================
+  
   grafana:
-    image: grafana/grafana:10.4.2
     container_name: grafana
+    build:
+      context: ./grafana
+    restart: always
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
-    user: "472:0"     # usuário interno do grafana
-    ports:
-      - "3333:3000"
+      - GF_SECURITY_ADMIN_USER=${MONITOR_ADMIN_USERNAME:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${MONITOR_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=${MONITOR_USERS_ALLOW_SIGN_UP:-false}
+    user: "472:0" 
     volumes:
-      - ./data/grafana:/var/lib/grafana
+      - grafana-data:/var/lib/grafana
     networks:
       - data-analytics-net
-    restart: always
+    ports:
+      - "3333:3000"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
 
   # ================================
   #              AIRFLOW
@@ -82,7 +89,7 @@ services:
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
-      - ./airflow/db:/var/lib/postgresql/data
+      - airflow-data:/var/lib/postgresql/data
     networks:
       - data-analytics-net
     restart: always
@@ -159,6 +166,21 @@ services:
     networks:
       - data-analytics-net
     restart: always
+
+volumes:
+  grafana-data:
+    name: grafana-data
+  airflow-data:
+    name: airflow-data
+  influxdb-data-applewatch:
+    name: influxdb-applewatch
+  influxdb-data-fitbit:
+    name: influxdb-fitbit
+  mongo-data-applewatch:
+    name: mongo-applewatch
+  mongo-data-fitbit:
+    name: mongo-fitbit
+  
 
 networks:
   data-analytics-net:
