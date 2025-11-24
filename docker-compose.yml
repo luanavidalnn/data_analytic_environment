@@ -114,7 +114,8 @@ services:
         --email admin@example.com || true
         "
     volumes:
-      - git_dags:/opt/airflow/dags
+      - git_dags:/opt/airflow/dags_repo
+      - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
     networks:
@@ -133,7 +134,8 @@ services:
     user: "50000:0"
     command: webserver
     volumes:
-      - git_dags:/opt/airflow/dags
+      - git_dags:/opt/airflow/dags_repo
+      - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
     ports:
@@ -153,7 +155,8 @@ services:
     user: "50000:0"
     command: scheduler
     volumes:
-      - git_dags:/opt/airflow/dags
+      - git_dags:/opt/airflow/dags_repo
+      - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
     networks:
@@ -172,6 +175,7 @@ services:
       GIT_SYNC_ONE_TIME: "false"
       GIT_SYNC_DEPTH: "1"
       GIT_SYNC_SUBMODULES: "off"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags_repo
     volumes:
       - git_dags:/git
 
