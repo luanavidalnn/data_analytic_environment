@@ -126,7 +126,6 @@ services:
     container_name: airflow-webserver
     depends_on:
       - airflow-db
-      - airflow-init
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
