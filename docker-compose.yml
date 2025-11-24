@@ -98,8 +98,6 @@ services:
     container_name: airflow-init
     depends_on:
       - airflow-db
-    env_file:
-      - common.env
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
@@ -156,8 +154,6 @@ services:
     depends_on:
       - airflow-db
       - airflow-init
-    env_file:
-      - common.env
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
@@ -179,8 +175,6 @@ services:
     container_name: airflow-scheduler
     depends_on:
       - airflow-db
-    env_file:
-      - common.env
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
