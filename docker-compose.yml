@@ -98,56 +98,23 @@ services:
     container_name: airflow-init
     depends_on:
       - airflow-db
-    env_file:
-      - common.env
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
     user: "50000:0"
     entrypoint: /bin/bash
-    command: >
-      -c "
-      echo '>>> Iniciando airflow-init...';
-
-      echo '>>> Checando DAGs...';
-
-      if [ ! -d /opt/airflow/dags/.git ]; then
-        echo '>>> Repositório ainda não clonado. Clonando...';
-        rm -rf /opt/airflow/dags/*;
-
-        git clone --branch main https://github.com/Luanavidalnn/data_analytic_environment.git /opt/airflow/dags-temp;
-
-        if [ -d /opt/airflow/dags-temp/dags ]; then
-          cp -r /opt/airflow/dags-temp/dags/* /opt/airflow/dags/;
-        else
-          cp -r /opt/airflow/dags-temp/* /opt/airflow/dags/;
-        fi;
-
-        rm -rf /opt/airflow/dags-temp;
-      else
-        echo '>>> Repositório já existe. Executando git pull...';
-        cd /opt/airflow/dags && git pull;
-      fi;
-
-      echo '>>> Ajustando permissões...';
-      chown -R 50000:0 /opt/airflow/dags;
-
-      echo '>>> Migrando banco...';
-      airflow db migrate;
-
-      echo '>>> Criando usuário admin...';
+    command: -c "
+      airflow db migrate &&
       airflow users create \
         --username admin \
         --password admin \
         --firstname Admin \
         --lastname User \
         --role Admin \
-        --email admin@example.com || true;
-
-      echo '>>> airflow-init finalizado.';
-      "
+        --email admin@example.com || true
+        "
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
+      - git_dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
     networks:
@@ -167,7 +134,7 @@ services:
     user: "50000:0"
     command: webserver
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
+      - git_dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
     ports:
@@ -187,12 +154,25 @@ services:
     user: "50000:0"
     command: scheduler
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
+      - git_dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
     networks:
       - data-analytics-net
     restart: always
+
+  git-sync:
+    image: k8s.gcr.io/git-sync/git-sync:v3.6.8
+    container_name: git-sync
+    environment:
+      GIT_SYNC_REPO: "https://github.com/Luanavidalnn/data_analytic_environment.git"
+      GIT_SYNC_BRANCH: "main"
+      GIT_SYNC_WAIT: "900"      
+      GIT_SYNC_ROOT: "/git"
+      GIT_SYNC_ONE_TIME: "false"
+      GIT_SYNC_DEPTH: "1"
+    volumes:
+      - git_dags:/git
 
 volumes:
   grafana-data:
@@ -207,6 +187,8 @@ volumes:
     name: mongo-applewatch
   mongo-data-fitbit:
     name: mongo-fitbit
+  git_dags:
+    name: git_dags
   
 networks:
   data-analytics-net:
