@@ -165,11 +165,12 @@ services:
     container_name: git-sync
     environment:
       GIT_SYNC_REPO: "https://github.com/Luanavidalnn/data_analytic_environment.git"
-      GIT_SYNC_BRANCH: "main"
+      GIT_SYNC_BRANCH: "develop"
       GIT_SYNC_WAIT: "900"      
       GIT_SYNC_ROOT: "/git"
       GIT_SYNC_ONE_TIME: "false"
       GIT_SYNC_DEPTH: "1"
+      GIT_SYNC_SUBMODULES: "off"
     volumes:
       - git_dags:/git
 
