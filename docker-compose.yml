@@ -106,6 +106,29 @@ services:
     user: "50000:0"
     entrypoint: /bin/bash
     command: -c "
+      echo '>>> Iniciando airflow-init...';
+
+      # ================
+      # CLONE DO REPOSITÓRIO DE DAGS
+      # ================
+      echo '>>> Checando DAGs...';
+
+      if [ ! -d /opt/airflow/dags/.git ]; then
+        echo '>>> Repositório ainda não clonado. Clonando...';
+        rm -rf /opt/airflow/dags/*
+
+        git clone --branch main https://github.com/luanavidalnn/data_analytic_environment.git /opt/airflow/dags
+      else
+        echo '>>> Repositório já existe. Executando git pull...';
+        cd /opt/airflow/dags && git pull
+      fi;
+
+      # Ajustar permissões
+      chown -R 50000:0 /opt/airflow/dags;
+
+      # ================
+      # Setup Airflow
+      # ================
       airflow db migrate &&
       airflow users create \
         --username admin \
@@ -113,12 +136,16 @@ services:
         --firstname Admin \
         --lastname User \
         --role Admin \
-        --email admin@example.com || true
-        "
+        --email admin@example.com || true;
+
+      echo '>>> airflow-init finalizado.';
+      "
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
+      # Inclui ssh apenas se você quiser clone via SSH
+      # - ~/.ssh:/home/airflow/.ssh:ro
     networks:
       - data-analytics-net
     restart: "no"
@@ -128,6 +155,7 @@ services:
     container_name: airflow-webserver
     depends_on:
       - airflow-db
+      - airflow-init
     env_file:
       - common.env
     environment:
