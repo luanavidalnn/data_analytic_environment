@@ -98,36 +98,44 @@ services:
     container_name: airflow-init
     depends_on:
       - airflow-db
+    env_file:
+      - common.env
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
     user: "50000:0"
     entrypoint: /bin/bash
-    command: -c "
+    command: >
+      -c "
       echo '>>> Iniciando airflow-init...';
 
-      # ================
-      # CLONE DO REPOSITÓRIO DE DAGS
-      # ================
       echo '>>> Checando DAGs...';
 
       if [ ! -d /opt/airflow/dags/.git ]; then
         echo '>>> Repositório ainda não clonado. Clonando...';
-        rm -rf /opt/airflow/dags/*
+        rm -rf /opt/airflow/dags/*;
 
-        git clone --branch main https://github.com/luanavidalnn/data_analytic_environment.git /opt/airflow/dags
+        git clone --branch main https://github.com/Luanavidalnn/data_analytic_environment.git /opt/airflow/dags-temp;
+
+        if [ -d /opt/airflow/dags-temp/dags ]; then
+          cp -r /opt/airflow/dags-temp/dags/* /opt/airflow/dags/;
+        else
+          cp -r /opt/airflow/dags-temp/* /opt/airflow/dags/;
+        fi;
+
+        rm -rf /opt/airflow/dags-temp;
       else
         echo '>>> Repositório já existe. Executando git pull...';
-        cd /opt/airflow/dags && git pull
+        cd /opt/airflow/dags && git pull;
       fi;
 
-      # Ajustar permissões
+      echo '>>> Ajustando permissões...';
       chown -R 50000:0 /opt/airflow/dags;
 
-      # ================
-      # Setup Airflow
-      # ================
-      airflow db migrate &&
+      echo '>>> Migrando banco...';
+      airflow db migrate;
+
+      echo '>>> Criando usuário admin...';
       airflow users create \
         --username admin \
         --password admin \
@@ -142,8 +150,6 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
-      # Inclui ssh apenas se você quiser clone via SSH
-      # - ~/.ssh:/home/airflow/.ssh:ro
     networks:
       - data-analytics-net
     restart: "no"
