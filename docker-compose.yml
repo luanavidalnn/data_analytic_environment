@@ -181,6 +181,8 @@ services:
       GIT_SYNC_SUBMODULES: "off"
     volumes:
       - git_dags:/git
+    networks:
+      - data-analytics-net
 
 volumes:
   grafana-data:
