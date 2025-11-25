@@ -94,14 +94,19 @@ services:
     restart: always
 
   airflow-init:
-    image: apache/airflow:2.8.0
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     container_name: airflow-init
     depends_on:
       - airflow-db
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
-    user: "50000:0"
+      _AIRFLOW_DB_UPGRADE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: "admin"
+      _AIRFLOW_WWW_USER_PASSWORD: "admin"
     entrypoint: /bin/bash
     command: -c "
       airflow db migrate &&
@@ -112,7 +117,8 @@ services:
         --lastname User \
         --role Admin \
         --email admin@example.com || true
-        "
+      "
+    user: "50000:0"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
@@ -122,10 +128,12 @@ services:
     restart: "no"
 
   airflow-webserver:
-    image: apache/airflow:2.8.0
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     container_name: airflow-webserver
     depends_on:
-      - airflow-db
+      - airflow-init
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
@@ -141,12 +149,14 @@ services:
     networks:
       - data-analytics-net
     restart: always
-
+    
   airflow-scheduler:
-    image: apache/airflow:2.8.0
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     container_name: airflow-scheduler
     depends_on:
-      - airflow-db
+      - airflow-init
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow

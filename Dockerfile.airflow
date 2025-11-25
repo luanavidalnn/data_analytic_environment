@@ -1,0 +1,8 @@
+FROM apache/airflow:latest
+
+COPY airflow/requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt || true
+
+COPY airflow/dags /opt/airflow/dags
+
+COPY airflow/plugins /opt/airflow/plugins
