@@ -101,6 +101,7 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags_repo
     user: "50000:0"
     entrypoint: /bin/bash
     command: -c "
@@ -131,6 +132,7 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
       AIRFLOW__WEBSERVER__WORKERS: 4
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags_repo
     user: "50000:0"
     command: webserver
     volumes:
@@ -152,6 +154,7 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags_repo
     user: "50000:0"
     command: scheduler
     volumes:
@@ -166,8 +169,9 @@ services:
   git-sync:
     image: k8s.gcr.io/git-sync/git-sync:v3.6.8
     container_name: git-sync
+    user: "65533:65533"
     environment:
-      GIT_SYNC_REPO: "https://github.com/Luanavidalnn/data_analytic_environment.git"
+      GIT_SYNC_REPO: "https://github.com/luanavidalnn/data_analytic_environment.git"
       GIT_SYNC_BRANCH: "develop"
       GIT_SYNC_WAIT: "30"      
       GIT_SYNC_ROOT: "/git"
@@ -175,7 +179,6 @@ services:
       GIT_SYNC_ONE_TIME: "false"
       GIT_SYNC_DEPTH: "1"
       GIT_SYNC_SUBMODULES: "off"
-      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags_repo
     volumes:
       - git_dags:/git
 
